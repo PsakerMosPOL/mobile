@@ -89,17 +89,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const orderData = {
-            full_name: document.getElementById('fullName').value,
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            subscribe: document.getElementById('subscribe').checked,
-            delivery_address: document.getElementById('deliveryAddress').value,
-            delivery_date: document.getElementById('deliveryDate').value, // Формат: YYYY-MM-DD
-            delivery_interval: document.getElementById('deliveryInterval').value,
-            comment: document.getElementById('comment').value,
-            good_ids: ids
-        };
+      const orderData = {
+    full_name: formData.get('full_name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    subscribe: formData.get('subscribe') ? 1 : 0,
+    delivery_address: formData.get('delivery_address'),
+    delivery_date: formData.get('delivery_date'), // Оставляем как есть (YYYY-MM-DD)
+    delivery_interval: formData.get('delivery_interval'),
+    comment: formData.get('comment') || '',
+    good_ids: utils.Cart.getIds().map(id => parseInt(id))
+};
 
         try {
             await utils.apiRequest('/orders', 'POST', orderData);
@@ -125,4 +125,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Инициализация ---
     loadCartItems();
+
 });
