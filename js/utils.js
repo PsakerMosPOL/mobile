@@ -1,10 +1,10 @@
 // utils.js
 
-// Используем HTTPS адрес, он работает стабильнее
+// Адрес для GitHub Pages / Netlify
 const API_BASE_URL = 'https://edu.std-900.ist.mospolytech.ru/exam-2024-1/api';
 
-// Ваш персональный ключ
-const API_KEY = '9ad403f9-e3ca-426a-b8fd-dd56b6d1e783'; 
+// Ваш ключ
+const API_KEY = '9ad403f9-e3ca-426a-b8fd-dd56b6d1e783';
 
 // --- Утилиты ---
 
@@ -22,41 +22,38 @@ function showNotification(message, type = 'info') {
 }
 
 function apiRequest(url, method = 'GET', data = null) {
-    // ИСПРАВЛЕНИЕ: Проверяем, есть ли уже параметры в URL
+    // Правильное добавление api_key
     let fullUrl;
     if (url.includes('?')) {
-        // Если параметры уже есть (например /goods?page=1), добавляем ключ через &
         fullUrl = `${API_BASE_URL}${url}&api_key=${API_KEY}`;
     } else {
-        // Если параметров нет (например /orders), добавляем ключ через ?
         fullUrl = `${API_BASE_URL}${url}?api_key=${API_KEY}`;
     }
     
     const options = {
         method: method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
     };
 
+    // Content-Type добавляем ТОЛЬКО для POST/PUT с данными
     if (data && (method === 'POST' || method === 'PUT')) {
+        options.headers = {
+            'Content-Type': 'application/json',
+        };
         options.body = JSON.stringify(data);
     }
 
     return fetch(fullUrl, options)
         .then(response => {
             if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.error || 'Ошибка запроса'); });
+                return response.json().then(err => { 
+                    throw new Error(err.error || 'Ошибка запроса'); 
+                });
             }
             return response.json();
         })
         .catch(error => {
             console.error('API Error:', error);
-            // Если ошибка сети (Failed to fetch), выводим более понятное сообщение
-            const msg = error.message === 'Failed to fetch' 
-                ? 'Ошибка сети. Проверьте подключение или запустите сервер.' 
-                : error.message;
-            showNotification(`Ошибка API: ${msg}`, 'error');
+            showNotification(`Ошибка API: ${error.message}`, 'error');
             throw error;
         });
 }
@@ -103,29 +100,25 @@ const Cart = {
 // --- Расчёт стоимости доставки ---
 
 function calculateDeliveryFee(deliveryDate, deliveryInterval) {
-    if (!deliveryDate) return 200;
+    if (!deliveryDate || !deliveryInterval) return 200;
 
     const date = new Date(deliveryDate);
-    const dayOfWeek = date.getDay(); // 0 - воскресенье, 6 - суббота
-    
-    // Защита от пустого интервала
-    if (!deliveryInterval) return 200;
-    
+    const dayOfWeek = date.getDay();
     const [startHour] = deliveryInterval.split('-')[0].split(':');
     const hour = parseInt(startHour, 10);
 
-    let fee = 200; // Базовая стоимость
+    let fee = 200;
 
-    if (dayOfWeek === 0 || dayOfWeek === 6) { // Выходные
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
         fee += 300;
-    } else if (hour >= 18) { // Будни, вечер
+    } else if (hour >= 18) {
         fee += 200;
     }
 
     return fee;
 }
 
-// --- Экспорт функций для использования в других файлах ---
+// --- Экспорт ---
 window.utils = {
     apiRequest,
     showNotification,
