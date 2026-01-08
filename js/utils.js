@@ -1,61 +1,58 @@
 // utils.js
-
-// Адрес для GitHub Pages / Netlify
-const API_BASE_URL = 'https://edu.std-900.ist.mospolytech.ru/exam-2024-1/api';
-
-// Ваш ключ
-const API_KEY = '9ad403f9-e3ca-426a-b8fd-dd56b6d1e783';
-
-// --- Утилиты ---
-
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    if (!notification) {
-        console.error('Элемент уведомления не найден.');
-        return;
-    }
-    notification.textContent = message;
-    notification.className = `notification ${type} visible`;
-    setTimeout(() => {
-        notification.classList.remove('visible');
-    }, 5000);
-}
-
 function apiRequest(url, method = 'GET', data = null) {
-    // Правильное добавление api_key
-    let fullUrl;
-    if (url.includes('?')) {
-        fullUrl = `${API_BASE_URL}${url}&api_key=${API_KEY}`;
-    } else {
-        fullUrl = `${API_BASE_URL}${url}?api_key=${API_KEY}`;
-    }
-    
-    const options = {
-        method: method,
-    };
+    return new Promise((resolve, reject) => {
+        let fullUrl;
+        if (url.includes('?')) {
+            fullUrl = `${API_BASE_URL}${url}&api_key=${API_KEY}`;
+        } else {
+            fullUrl = `${API_BASE_URL}${url}?api_key=${API_KEY}`;
+        }
 
-    // Content-Type добавляем ТОЛЬКО для POST/PUT с данными
-    if (data && (method === 'POST' || method === 'PUT')) {
-        options.headers = {
-            'Content-Type': 'application/json',
-        };
-        options.body = JSON.stringify(data);
-    }
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, fullUrl, true);
 
-    return fetch(fullUrl, options)
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { 
-                    throw new Error(err.error || 'Ошибка запроса'); 
-                });
+        // Добавляем заголовок ТОЛЬКО для POST/PUT с данными
+        if (data && (method === 'POST' || method === 'PUT')) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+        }
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response);
+                } catch (e) {
+                    reject(new Error('Ошибка парсинга JSON'));
+                }
+            } else {
+                try {
+                    const error = JSON.parse(xhr.responseText);
+                    reject(new Error(error.error || 'Ошибка запроса'));
+                } catch (e) {
+                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                }
             }
-            return response.json();
-        })
-        .catch(error => {
-            console.error('API Error:', error);
-            showNotification(`Ошибка API: ${error.message}`, 'error');
-            throw error;
-        });
+        };
+
+        xhr.onerror = function() {
+            reject(new Error('Ошибка сети. Проверьте подключение.'));
+        };
+
+        xhr.ontimeout = function() {
+            reject(new Error('Превышено время ожидания ответа'));
+        };
+
+        if (data && (method === 'POST' || method === 'PUT')) {
+            xhr.send(JSON.stringify(data));
+        } else {
+            xhr.send();
+        }
+    })
+    .catch(error => {
+        console.error('API Error:', error);
+        showNotification(`Ошибка API: ${error.message}`, 'error');
+        throw error;
+    });
 }
 
 // --- Управление корзиной ---
@@ -125,3 +122,4 @@ window.utils = {
     Cart,
     calculateDeliveryFee
 };
+
