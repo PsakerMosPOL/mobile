@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🛒 Магазин Товаров</div>
+        <div class="nav-icons">
+            <a href="index.html"><img src="assets/home.png" alt="Главная"></a>
+            <a href="orders.html"><img src="assets/user.png" alt="ЛК"></a>
+        </div>
+    </header>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <main>
+        <section class="cart-section">
+            <h2>Корзина</h2>
+            <div id="cartItems" class="goods-grid"></div>
+            <p id="emptyCart" class="empty-cart">Корзина пуста. Перейдите в каталог, чтобы добавить товары.</p>
+        </section>
+
+        <section class="order-form">
+            <h2>Оформление заказа</h2>
+            <form id="orderForm">
+                <div class="form-row">
+                    <label>Имя: <input type="text" id="fullName" required></label>
+                    <label>Email: <input type="email" id="email" required></label>
+                </div>
+                <div class="form-row">
+                    <label>Телефон: <input type="text" id="phone" required></label>
+                    <label>Адрес доставки: <input type="text" id="deliveryAddress" required></label>
+                </div>
+                <div class="form-row">
+                    <label>Дата доставки: <input type="date" id="deliveryDate" required></label>
+                    <label>Временной интервал:
+                        <select id="deliveryInterval" required>
+                            <option value="08:00-12:00">08:00-12:00</option>
+                            <option value="12:00-14:00">12:00-14:00</option>
+                            <option value="14:00-18:00">14:00-18:00</option>
+                            <option value="18:00-22:00">18:00-22:00</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <label>Подписаться на рассылку: <input type="checkbox" id="subscribe"></label>
+                    <label>Комментарий: <textarea id="comment"></textarea></label>
+                </div>
+                <div class="total-cost">Итоговая стоимость: <span id="totalCost">0 ₽</span> (стоимость доставки: <span id="deliveryFee">0 ₽</span>)</div>
+                <div class="form-actions">
+                    <button type="button" id="clearCart">Сбросить</button>
+                    <button type="submit" id="placeOrder">Оформить</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        © 2025 Название компании | Контакты: info@example.com
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>

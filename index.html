@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интернет-магазин</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🛒 Магазин Товаров</div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Введите запрос..." autocomplete="off">
+            <button id="searchBtn">Найти</button>
+            <div id="autocomplete-list" class="autocomplete-list"></div>
+        </div>
+        <div class="nav-icons">
+            <a href="cart.html"><img src="assets/cart.png" alt="Корзина"></a>
+            <a href="orders.html"><img src="assets/user.png" alt="ЛК"></a>
+        </div>
+    </header>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <main>
+        <aside class="sidebar">
+            <h3>Фильтр</h3>
+            <div class="filter-category">
+                <label><input type="checkbox" value="electronics"> Электроника</label>
+                <label><input type="checkbox" value="books"> Книги</label>
+                <label><input type="checkbox" value="clothing"> Одежда</label>
+                <label><input type="checkbox" value="sports"> Спорт</label>
+            </div>
+            <div class="filter-price">
+                <label>Стоимость от: <input type="number" id="priceFrom" min="0"></label>
+                <label>до: <input type="number" id="priceTo" min="0"></label>
+            </div>
+            <div class="filter-discount">
+                <label><input type="checkbox" id="onlyDiscount"> Только со скидкой</label>
+            </div>
+            <button id="applyFilter">Применить</button>
+        </aside>
+
+        <section class="catalog">
+            <h2>Каталог</h2>
+            <select id="sortOrder">
+                <option value="rating_desc">По убыванию рейтинга</option>
+                <option value="rating_asc">По возрастанию рейтинга</option>
+                <option value="price_desc">По убыванию цены</option>
+                <option value="price_asc">По возрастанию цены</option>
+            </select>
+            <div id="goodsContainer" class="goods-grid"></div>
+            <button id="loadMore" class="btn-load-more">Загрузить ещё</button>
+        </section>
+    </main>
+
+    <footer>
+        © 2025 Название компании | Контакты: info@example.com
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
