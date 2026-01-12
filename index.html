@@ -7,18 +7,21 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">🛒 Магазин Товаров</div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Введите запрос..." autocomplete="off">
-            <button id="searchBtn">Найти</button>
-            <div id="autocomplete-list" class="autocomplete-list"></div>
-        </div>
-        <div class="nav-icons">
-            <a href="cart.html"><img src="assets/cart.png" alt="Корзина"></a>
-            <a href="orders.html"><img src="assets/user.png" alt="ЛК"></a>
-        </div>
-    </header>
+    <!-- index.html - хедер -->
+<header>
+    <div class="logo">📱 Магазин Электроники</div>
+    
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Введите запрос">
+        <button id="searchBtn">Найти</button>
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+    </div>
+    
+    <div class="nav-icons">
+        <a href="cart.html" title="Корзина">🛒</a>
+        <a href="orders.html" title="Личный кабинет">👤</a>
+    </div>
+</header>
 
     <div id="notification" class="notification hidden"></div>
 
@@ -61,4 +64,5 @@
     <script src="js/utils.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>
