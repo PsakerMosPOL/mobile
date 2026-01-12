@@ -42,10 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
         goods.forEach(good => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'good-card';
-            const priceDisplay = good.discount_price ? `<span class="discount">${good.discount_price} ₽</span><span class="price original">${good.actual_price} ₽</span>` : `<span class="price">${good.actual_price} ₽</span>`;
+            const priceDisplay = good.discount_price 
+                ? `<span class="discount">${good.discount_price} ₽</span><span class="price original">${good.actual_price} ₽</span>` 
+                : `<span class="price">${good.actual_price} ₽</span>`;
+            
             itemDiv.innerHTML = `
-                <img src="${good.image_url.trim()}" alt="${good.name}" onerror="this.src='assets/placeholder.png';">
-                <div class="name">${good.name}</div>
+                <img src="${good.image_url}" alt="${good.name}" onerror="this.src='assets/placeholder.png';">
+                <div class="name" title="${good.name}">${good.name}</div>
                 <div class="rating">⭐ ${good.rating}</div>
                 ${priceDisplay}
                 <button class="remove-from-cart" data-id="${good.id}">Удалить</button>
@@ -65,10 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Расчёт стоимости ---
     function updateTotalCost() {
-        const deliveryDate = document.getElementById('deliveryDate').value;
-        const deliveryInterval = document.getElementById('deliveryInterval').value;
+        const deliveryDate = document.getElementById('deliveryDate')?.value || '';
+        const deliveryInterval = document.getElementById('deliveryInterval')?.value || '';
         const deliveryFee = utils.calculateDeliveryFee(deliveryDate, deliveryInterval);
-        deliveryFeeSpan.textContent = `${deliveryFee} ₽`;
+        
+        if (deliveryFeeSpan) {
+            deliveryFeeSpan.textContent = `${deliveryFee} ₽`;
+        }
 
         let itemsCost = 0;
         cartGoods.forEach(good => {
@@ -76,7 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const total = itemsCost + deliveryFee;
-        totalCostSpan.textContent = `${total} ₽`;
+        if (totalCostSpan) {
+            totalCostSpan.textContent = `${total} ₽`;
+        }
     }
 
     // --- Отправка заказа ---
@@ -89,41 +97,58 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-      const orderData = {
-    full_name: formData.get('full_name'),
-    email: formData.get('email'),
-    phone: formData.get('phone'),
-    subscribe: formData.get('subscribe') ? 1 : 0,
-    delivery_address: formData.get('delivery_address'),
-    delivery_date: formData.get('delivery_date'), // Оставляем как есть (YYYY-MM-DD)
-    delivery_interval: formData.get('delivery_interval'),
-    comment: formData.get('comment') || '',
-    good_ids: utils.Cart.getIds().map(id => parseInt(id))
-};
+        // ВАЖНО: Создаём FormData из формы
+        const formData = new FormData(orderForm);
+
+        const orderData = {
+            full_name: formData.get('full_name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            subscribe: formData.get('subscribe') ? 1 : 0,
+            delivery_address: formData.get('delivery_address'),
+            delivery_date: formData.get('delivery_date'), // Формат YYYY-MM-DD
+            delivery_interval: formData.get('delivery_interval'),
+            comment: formData.get('comment') || '',
+            good_ids: ids.map(id => parseInt(id))
+        };
 
         try {
             await utils.apiRequest('/orders', 'POST', orderData);
             utils.showNotification('Заказ успешно оформлен!', 'success');
             utils.Cart.clear();
-            window.location.href = 'index.html'; // Перенаправить на главную
+            
+            // Перенаправление через 1.5 секунды
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+            
         } catch (error) {
             console.error('Ошибка оформления заказа:', error);
+            // Уведомление об ошибке показано в utils.apiRequest
         }
     });
 
     // --- Обновление стоимости при изменении даты/времени ---
-    document.getElementById('deliveryDate').addEventListener('change', updateTotalCost);
-    document.getElementById('deliveryInterval').addEventListener('change', updateTotalCost);
+    const deliveryDateInput = document.getElementById('deliveryDate');
+    const deliveryIntervalInput = document.getElementById('deliveryInterval');
+    
+    if (deliveryDateInput) {
+        deliveryDateInput.addEventListener('change', updateTotalCost);
+    }
+    if (deliveryIntervalInput) {
+        deliveryIntervalInput.addEventListener('change', updateTotalCost);
+    }
 
     // --- Очистка корзины ---
-    clearCartBtn.addEventListener('click', function() {
-        if (confirm('Вы уверены, что хотите очистить корзину?')) {
-            utils.Cart.clear();
-            loadCartItems();
-        }
-    });
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener('click', function() {
+            if (confirm('Вы уверены, что хотите очистить корзину?')) {
+                utils.Cart.clear();
+                loadCartItems();
+            }
+        });
+    }
 
     // --- Инициализация ---
     loadCartItems();
-
 });
