@@ -446,4 +446,24 @@ footer {
     .modal-content {
         max-width: 90%;
     }
+    .price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.price.original {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal:not(.hidden) {
+    display: flex;
 }
