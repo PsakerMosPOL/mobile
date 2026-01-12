@@ -47,11 +47,12 @@
         <section class="catalog">
             <h2>Каталог</h2>
             <select id="sortOrder">
-                <option value="rating_desc">По убыванию рейтинга</option>
-                <option value="rating_asc">По возрастанию рейтинга</option>
-                <option value="price_desc">По убыванию цены</option>
-                <option value="price_asc">По возрастанию цены</option>
-            </select>
+    <option value="">Без сортировки</option> <!-- Добавь эту строку! -->
+    <option value="rating_desc">По убыванию рейтинга</option>
+    <option value="rating_asc">По возрастанию рейтинга</option>
+    <option value="price_desc">По убыванию цены</option>
+    <option value="price_asc">По возрастанию цены</option>
+</select>
             <div id="goodsContainer" class="goods-grid"></div>
             <button id="loadMore" class="btn-load-more">Загрузить ещё</button>
         </section>
@@ -66,3 +67,4 @@
 </body>
 
 </html>
+
