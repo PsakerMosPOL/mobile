@@ -1,4 +1,4 @@
-// main.js
+// main.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 
 document.addEventListener('DOMContentLoaded', function() {
     const goodsContainer = document.getElementById('goodsContainer');
@@ -11,9 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentPage = 1;
     let currentQuery = '';
-    let currentFilters = {};
-    let allGoods = []; 
-    let isSearchMode = false;
+    let currentFilters = {
+        category: null,
+        priceFrom: null,
+        priceTo: null,
+        discount: false
+    };
+    let allGoods = [];
 
     // --- Загрузка товаров ---
     async function loadGoods(page = 1, reset = false) {
@@ -27,22 +31,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 params.append('sort_order', sortOrderSelect.value);
             }
 
+            // ВАЖНО: Используем либо поиск, либо фильтры, но не одновременно
             if (currentQuery) {
                 // Если есть поисковый запрос, добавляем его
                 params.append('query', currentQuery);
+                console.log('Поисковый запрос:', currentQuery);
             } else {
-                // Если поиска нет, применяем фильтры
-                if (currentFilters.category) params.append('main_category', currentFilters.category);
-                if (currentFilters.priceFrom) params.append('price_from', currentFilters.priceFrom);
-                if (currentFilters.priceTo) params.append('price_to', currentFilters.priceTo);
-                if (currentFilters.discount) params.append('discount', 1);
+                // Если поиска нет, применяем фильтры из currentFilters
+                if (currentFilters.category) {
+                    params.append('main_category', currentFilters.category);
+                }
+                if (currentFilters.priceFrom) {
+                    params.append('price_from', currentFilters.priceFrom);
+                }
+                if (currentFilters.priceTo) {
+                    params.append('price_to', currentFilters.priceTo);
+                }
+                if (currentFilters.discount) {
+                    params.append('discount', 1);
+                }
+                console.log('Фильтры:', currentFilters);
             }
 
             const url = `/goods?${params.toString()}`;
+            console.log('Запрос к API:', url);
+            
             const data = await utils.apiRequest(url);
-
-            // Обработка ответа (API может вернуть { goods: [], ... } или просто [])
+            
+            // Обработка ответа
             const incomingGoods = data.goods || data;
+            console.log('Получено товаров:', incomingGoods.length);
 
             if (reset) {
                 goodsContainer.innerHTML = '';
@@ -55,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
             currentPage = page;
 
             // Управление кнопкой "Загрузить ещё"
-            // Если пришло меньше товаров, чем per_page (10), значит это конец
             if (!incomingGoods || incomingGoods.length < 10) {
                 loadMoreBtn.style.display = 'none';
             } else {
@@ -64,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error('Ошибка загрузки товаров:', error);
-            // Можно добавить уведомление пользователю через utils.showNotification
+            utils.showNotification('Ошибка загрузки товаров', 'error');
         }
     }
 
@@ -110,11 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Запрос отправляем, только если введено хотя бы 2-3 символа
         if (query.length > 2) {
             try {
-                // Передаем весь запрос в API автокомплита
                 const suggestions = await utils.apiRequest(`/autocomplete?query=${encodeURIComponent(query)}`);
                 displayAutocomplete(suggestions);
             } catch (error) {
-                // При ошибке просто скрываем список
                 autocompleteList.innerHTML = '';
                 autocompleteList.classList.remove('show');
             }
@@ -122,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             autocompleteList.innerHTML = '';
             autocompleteList.classList.remove('show');
         }
-    }, 300)); // Задержка 300мс
+    }, 300));
 
     function displayAutocomplete(suggestions) {
         autocompleteList.innerHTML = '';
@@ -131,12 +146,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const div = document.createElement('div');
                 div.textContent = suggestion;
                 div.addEventListener('click', () => {
-                    // ТЗ Вариант 1: заменяем последнее слово, если оно неполное
                     const words = searchInput.value.split(' ');
                     words[words.length - 1] = suggestion; 
                     searchInput.value = words.join(' '); 
                     
-                    // Скрываем список после выбора
                     autocompleteList.innerHTML = '';
                     autocompleteList.classList.remove('show');
                 });
@@ -158,41 +171,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Поиск ---
     searchBtn.addEventListener('click', function() {
         currentQuery = searchInput.value.trim();
-        currentFilters = {}; // Сбрасываем фильтры категорий, т.к. ищем по тексту
-        isSearchMode = true;
-        loadGoods(1, true); // Загружаем 1-ю страницу, сбрасывая старые результаты
+        // Сбрасываем фильтры при поиске
+        currentFilters = {
+            category: null,
+            priceFrom: null,
+            priceTo: null,
+            discount: false
+        };
+        // Сбрасываем чекбоксы в сайдбаре
+        document.querySelectorAll('.filter-category input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('priceFrom').value = '';
+        document.getElementById('priceTo').value = '';
+        document.getElementById('onlyDiscount').checked = false;
+        
+        loadGoods(1, true);
     });
 
     // --- Фильтрация (сайдбар) ---
     applyFilterBtn.addEventListener('click', function() {
-        // Собираем категории
+        // Собираем категории (берем первую выбранную)
         const categories = document.querySelectorAll('.filter-category input[type="checkbox"]:checked');
         const categoryValues = Array.from(categories).map(cb => cb.value);
         
-        // В текущей реализации API обычно поддерживает одну категорию или массив.
-        // Если API принимает только одну, берем первую. Если массив - можно передать все.
-        // Здесь берем первую для простоты, как в исходном коде:
         currentFilters.category = categoryValues[0] || null;
-        
         currentFilters.priceFrom = document.getElementById('priceFrom').value || null;
         currentFilters.priceTo = document.getElementById('priceTo').value || null;
-        currentFilters.discount = document.getElementById('onlyDiscount').checked; // true/false
+        currentFilters.discount = document.getElementById('onlyDiscount').checked;
         
-        currentQuery = ''; // Сбрасываем текстовый поиск
-        searchInput.value = ''; // Очищаем поле
-        isSearchMode = false;
+        // Сбрасываем поисковый запрос
+        currentQuery = '';
+        searchInput.value = '';
+        autocompleteList.innerHTML = '';
+        autocompleteList.classList.remove('show');
         
+        console.log('Применены фильтры:', currentFilters);
         loadGoods(1, true);
     });
 
     // --- Сортировка ---
     sortOrderSelect.addEventListener('change', function() {
-    console.log('Сортировка изменена на:', this.value); // Для проверки
-    loadGoods(1, true);
-});
+        console.log('Сортировка изменена на:', this.value);
+        loadGoods(1, true);
+    });
+
     // --- Загрузка ещё (пагинация) ---
     loadMoreBtn.addEventListener('click', function() {
-        loadGoods(currentPage + 1, false); // false = добавляем к текущим, а не затираем
+        loadGoods(currentPage + 1, false);
     });
 
     // --- Функция Debounce ---
@@ -208,4 +232,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Инициализация: Первая загрузка ---
     loadGoods(1, true);
 });
-
