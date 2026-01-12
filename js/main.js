@@ -187,10 +187,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Сортировка ---
     sortOrderSelect.addEventListener('change', function() {
-        // При смене сортировки просто перезагружаем текущий вид (будь то поиск или каталог)
-        loadGoods(1, true);
-    });
-
+    console.log('Сортировка изменена на:', this.value); // Для проверки
+    loadGoods(1, true);
+});
     // --- Загрузка ещё (пагинация) ---
     loadMoreBtn.addEventListener('click', function() {
         loadGoods(currentPage + 1, false); // false = добавляем к текущим, а не затираем
@@ -209,3 +208,4 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Инициализация: Первая загрузка ---
     loadGoods(1, true);
 });
+
