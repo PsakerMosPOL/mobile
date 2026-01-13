@@ -32,23 +32,21 @@
     <div id="notification" class="notification hidden"></div>
 
     <main>
-        <aside class="sidebar">
-            <h3>Фильтр</h3>
-            <div class="filter-category">
-                <label><input type="checkbox" value="electronics"> Электроника</label>
-                <label><input type="checkbox" value="books"> Книги</label>
-                <label><input type="checkbox" value="clothing"> Одежда</label>
-                <label><input type="checkbox" value="sports"> Спорт</label>
-            </div>
-            <div class="filter-price">
-                <label>Стоимость от: <input type="number" id="priceFrom" min="0"></label>
-                <label>до: <input type="number" id="priceTo" min="0"></label>
-            </div>
-            <div class="filter-discount">
-                <label><input type="checkbox" id="onlyDiscount"> Только со скидкой</label>
-            </div>
-            <button id="applyFilter">Применить</button>
-        </aside>
+       <aside class="sidebar">
+    <h3>Фильтр</h3>
+    <div class="filter-category" id="categoryFilters">
+        <!-- Категории загружаются динамически -->
+        <p style="color: #999;">Загрузка...</p>
+    </div>
+    <div class="filter-price">
+        <label>Стоимость от: <input type="number" id="priceFrom" min="0"></label>
+        <label>до: <input type="number" id="priceTo" min="0"></label>
+    </div>
+    <div class="filter-discount">
+        <label><input type="checkbox" id="onlyDiscount"> Только со скидкой</label>
+    </div>
+    <button id="applyFilter">Применить</button>
+</aside>
 
         <section class="catalog">
             <h2>Каталог</h2>
@@ -73,6 +71,7 @@
 </body>
 
 </html>
+
 
 
 
