@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы - Интернет-магазин</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🛒 MartBerry</div>
+        
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Введите запрос">
+            <button id="searchBtn">Найти</button>
+            <div id="autocomplete-list" class="autocomplete-list"></div>
+        </div>
+        
+        <div class="nav-icons">
+            <a href="index.html" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Главная</span>
+            </a>
+            <a href="cart.html" class="nav-link">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Корзина</span>
+            </a>
+            <a href="orders.html" class="nav-link active">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Личный кабинет</span>
+            </a>
+        </div>
+    </header>
+
+    <div id="notification" class="notification"></div>
+
+    <main class="orders-page" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+        <h1 style="margin-bottom: 2rem;">📦 Мои заказы</h1>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <thead>
+                    <tr style="background: #cb11ab; color: white;">
+                        <th style="padding: 1rem; text-align: left;">№</th>
+                        <th style="padding: 1rem; text-align: left;">Дата создания</th>
+                        <th style="padding: 1rem; text-align: left;">Состав</th>
+                        <th style="padding: 1rem; text-align: left;">Стоимость</th>
+                        <th style="padding: 1rem; text-align: left;">Доставка</th>
+                        <th style="padding: 1rem; text-align: center;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersList">
+                    <!-- Заказы будут добавлены через JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Модальное окно просмотра -->
+    <div id="viewModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📄 Просмотр заказа</h2>
+                <button class="close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="viewOrderDetails">
+                <!-- Детали заказа -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>✏️ Редактирование заказа</h2>
+                <button class="close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="editOrderForm">
+                <input type="hidden" id="editOrderId">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">👤 Имя:</label>
+                    <input type="text" id="editFullName" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">📧 Email:</label>
+                    <input type="email" id="editEmail" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">📱 Телефон:</label>
+                    <input type="tel" id="editPhone" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">📍 Адрес доставки:</label>
+                    <input type="text" id="editDeliveryAddress" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">📅 Дата доставки:</label>
+                    <input type="date" id="editDeliveryDate" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">⏰ Время доставки:</label>
+                    <select id="editDeliveryInterval" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="08:00-12:00">08:00 - 12:00</option>
+                        <option value="12:00-14:00">12:00 - 14:00</option>
+                        <option value="14:00-18:00">14:00 - 18:00</option>
+                        <option value="18:00-22:00">18:00 - 22:00</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">💬 Комментарий:</label>
+                    <textarea id="editComment" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
+                </div>
+                
+                <!-- НОВОЕ: Блок с товарами -->
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">🛒 Товары:</label>
+                    <div id="editOrderGoods" style="background: #f5f5f5; padding: 1rem; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                        <p style="color: #999;">Загрузка товаров...</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" style="flex: 1; padding: 0.75rem; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">✅ Сохранить</button>
+                    <button type="button" class="btn-cancel" style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">❌ Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно удаления -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; max-width: 400px; width: 90%; text-align: center;">
+            <h2 style="margin-bottom: 1rem;">🗑️ Удаление заказа</h2>
+            <p style="margin-bottom: 2rem; color: #666;">Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.</p>
+            <div style="display: flex; gap: 1rem;">
+                <button id="deleteConfirm" style="flex: 1; padding: 0.75rem; background: #dc3545; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">✅ Да, удалить</button>
+                <button id="deleteCancel" style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">❌ Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 MartBerry® | Контакты: info@MartBerry.com
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/orders.js"></script>
+</body>
+</html>

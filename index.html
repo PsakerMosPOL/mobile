@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интернет-магазин</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- index.html - хедер -->
+<header>
+    <div class="logo">📱 MartBerry</div>
+    
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Введите запрос">
+        <button id="searchBtn">Найти</button>
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+    </div>
+    
+    <div class="nav-icons">
+        <a href="cart.html" class="nav-link">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-text">Корзина</span>
+        </a>
+        <a href="orders.html" class="nav-link">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Личный кабинет</span>
+        </a>
+    </div>
+</header>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <main>
+      <aside class="sidebar">
+    <h3>Фильтр</h3>
+    
+    <!-- Категории (загружаются динамически) -->
+    <div id="categoryFilters" class="filter-category">
+        <p style="color: #999; font-size: 0.9rem;">Загрузка категорий...</p>
+    </div>
+    
+    <!-- Цена -->
+    <div class="filter-price">
+        <label>Стоимость от: 
+            <input type="number" id="priceFrom" min="0" placeholder="Мин.">
+        </label>
+        <label>до: 
+            <input type="number" id="priceTo" min="0" placeholder="Макс.">
+        </label>
+    </div>
+    
+    <!-- Скидка -->
+    <div class="filter-discount">
+        <label>
+            <input type="checkbox" id="onlyDiscount"> Только со скидкой
+        </label>
+    </div>
+    
+    <button id="applyFilter">Применить</button>
+</aside>
+
+
+        <section class="catalog">
+            <h2>Каталог</h2>
+            <select id="sortOrder">
+    <option value="">Без сортировки</option> <!-- Добавь эту строку! -->
+    <option value="rating_desc">По убыванию рейтинга</option>
+    <option value="rating_asc">По возрастанию рейтинга</option>
+    <option value="price_desc">По убыванию цены</option>
+    <option value="price_asc">По возрастанию цены</option>
+</select>
+            <div id="goodsContainer" class="goods-grid"></div>
+            <button id="loadMore" class="btn-load-more">Загрузить ещё</button>
+        </section>
+    </main>
+
+    <footer>
+        © 2025 MartBerry® | Контакты: info@MartBerry.com
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
+
+
+
+
+
