@@ -1,4 +1,4 @@
-// main.js - ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ
+// main.js - С ДИЗАЙНОМ WILDBERRIES
 
 document.addEventListener('DOMContentLoaded', function() {
     const goodsContainer = document.getElementById('goodsContainer');
@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await utils.apiRequest('/goods?per_page=100');
             const goods = Array.isArray(data) ? data : (data.goods || []);
             
-            // Извлекаем уникальные категории
             const categories = [...new Set(goods.map(g => g.main_category))].filter(Boolean).sort();
             
             const container = document.getElementById('categoryFilters');
@@ -74,16 +73,13 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('page', page);
             params.append('per_page', 10);
             
-            // Сортировка
             if (sortOrderSelect && sortOrderSelect.value) {
                 params.append('sort_order', sortOrderSelect.value);
             }
 
-            // Поиск или фильтры
             if (currentQuery) {
                 params.append('query', currentQuery);
             } else {
-                // Категории (ИСПРАВЛЕНО: берём только первую)
                 const selectedCategories = Array.from(
                     document.querySelectorAll('.category-checkbox:checked')
                 ).map(cb => cb.value);
@@ -93,14 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('🏷️ Фильтр по категории:', selectedCategories[0]);
                 }
                 
-                // Цена
                 const priceFrom = document.getElementById('priceFrom')?.value;
                 const priceTo = document.getElementById('priceTo')?.value;
                 
                 if (priceFrom) params.append('price_from', priceFrom);
                 if (priceTo) params.append('price_to', priceTo);
                 
-                // Скидка
                 const discountCheckbox = document.getElementById('onlyDiscount');
                 if (discountCheckbox && discountCheckbox.checked) {
                     params.append('discount', '1');
@@ -110,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = `/goods?${params.toString()}`;
             const data = await utils.apiRequest(url);
             
-            // Определяем массив товаров
             let incomingGoods = Array.isArray(data) ? data : (data.goods || []);
             
             console.log(`✅ Получено ${incomingGoods.length} товаров`);
@@ -131,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             currentPage = page;
             
-            // Обновляем кнопку
             if (loadMoreBtn) {
                 if (hasMore) {
                     loadMoreBtn.textContent = 'Загрузить ещё';
@@ -162,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Отображение товаров ---
+    // --- Отображение товаров (WILDBERRIES STYLE) ---
     function renderGoods(goods) {
         goods.forEach(good => {
             const card = document.createElement('div');
@@ -172,47 +164,106 @@ document.addEventListener('DOMContentLoaded', function() {
             const rating = good.rating || 0;
             const actualPrice = good.actual_price || 0;
             const discountPrice = good.discount_price;
-            const imageUrl = good.image_url || 'https://via.placeholder.com/200?text=No+Image';
+            const imageUrl = good.image_url || 'https://via.placeholder.com/280x280?text=No+Image';
             const id = good.id;
             
-            // Форматирование цены
-            let priceDisplay = '';
-            if (discountPrice && discountPrice < actualPrice) {
-                const discountPercent = Math.round((1 - discountPrice / actualPrice) * 100);
-                priceDisplay = `
-                    <div class="price-block">
-                        <span class="price original">${actualPrice} ₽</span>
-                        <span class="discount">${discountPrice} ₽</span>
-                        <span style="color: #28a745; font-weight: 700;">-${discountPercent}%</span>
-                    </div>
-                `;
-            } else {
-                priceDisplay = `
-                    <div class="price-block">
-                        <span class="price">${actualPrice} ₽</span>
+            // Расчёт скидки
+            const hasDiscount = discountPrice && discountPrice < actualPrice;
+            const discountPercent = hasDiscount ? 
+                Math.round((1 - discountPrice / actualPrice) * 100) : 0;
+            
+            // Бейджи
+            let badgesHTML = '';
+            if (hasDiscount) {
+                badgesHTML = `
+                    <div class="badge-container">
+                        <span class="badge discount">-${discountPercent}%</span>
                     </div>
                 `;
             }
             
-            // Обрезаем длинные названия
-            const shortName = name.length > 60 ? name.substring(0, 60) + '...' : name;
+            // Блок цен
+            const priceHTML = hasDiscount ? `
+                <div class="price-block">
+                    <span class="price">${discountPrice} ₽</span>
+                    <span class="price original">${actualPrice} ₽</span>
+                </div>
+            ` : `
+                <div class="price-block">
+                    <span class="price">${actualPrice} ₽</span>
+                </div>
+            `;
+            
+            // Обрезка названия
+            const shortName = name.length > 70 ? name.substring(0, 70) + '...' : name;
+            
+            // Текущая дата + 1 день для "Завтра"
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const deliveryDate = tomorrow.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
             
             card.innerHTML = `
-                <img src="${imageUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
-                <div class="name" title="${name}">${shortName}</div>
-                <div class="rating">⭐ ${rating.toFixed(1)}</div>
-                ${priceDisplay}
-                <button class="add-to-cart" data-id="${id}">Добавить в корзину</button>
+                ${badgesHTML}
+                <button class="favorite-btn" data-id="${id}" title="Добавить в избранное">♡</button>
+                <img src="${imageUrl}" alt="${name}" 
+                     onerror="this.src='https://via.placeholder.com/280x280?text=No+Image'">
+                <div class="card-content">
+                    <div class="name" title="${name}">${shortName}</div>
+                    <div class="rating">
+                        <span class="star">★</span>
+                        <span>${rating.toFixed(1)}</span>
+                        <span class="count">• ${Math.floor(Math.random() * 500 + 100)}K оценок</span>
+                    </div>
+                    ${priceHTML}
+                    <button class="add-to-cart" data-id="${id}">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-text">Завтра</span>
+                    </button>
+                    <div class="delivery-info">Доставка завтра, ${deliveryDate}</div>
+                </div>
             `;
             goodsContainer.appendChild(card);
         });
 
-        // Навешиваем события на кнопки (ИСПРАВЛЕНО)
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const goodId = parseInt(e.target.dataset.id, 10);
-                console.log('🛒 Добавление товара ID:', goodId);
-                utils.Cart.addItem(goodId);
+        // Обработчики кнопок "Добавить в корзину"
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = parseInt(this.dataset.id, 10);
+                console.log('🛒 Добавление товара ID:', id);
+                
+                // Анимация кнопки
+                this.classList.add('animating', 'added');
+                const cartIcon = this.querySelector('.cart-icon');
+                const cartText = this.querySelector('.cart-text');
+                
+                if (cartIcon) cartIcon.textContent = '✓';
+                if (cartText) cartText.textContent = 'Добавлено';
+                
+                setTimeout(() => {
+                    this.classList.remove('animating', 'added');
+                    if (cartIcon) cartIcon.textContent = '🛒';
+                    if (cartText) cartText.textContent = 'Завтра';
+                }, 1500);
+                
+                utils.Cart.addItem(id);
+            });
+        });
+
+        // Обработчики кнопок избранного
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                this.textContent = this.classList.contains('active') ? '♥' : '♡';
+                
+                const id = this.dataset.id;
+                if (this.classList.contains('active')) {
+                    console.log('❤️ Добавлено в избранное:', id);
+                    utils.showNotification('Добавлено в избранное', 'info');
+                } else {
+                    console.log('💔 Удалено из избранного:', id);
+                }
             });
         });
     }
@@ -258,7 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Закрытие автодополнения
     document.addEventListener('click', function(e) {
         if (autocompleteList && !searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
             autocompleteList.classList.remove('show');
@@ -275,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             currentQuery = query;
-            // Сбрасываем фильтры
             document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
             const priceFrom = document.getElementById('priceFrom');
             const priceTo = document.getElementById('priceTo');
@@ -290,7 +339,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Поиск по Enter
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
