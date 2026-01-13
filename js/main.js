@@ -1,4 +1,4 @@
-// main.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// main.js 
 
 document.addEventListener('DOMContentLoaded', function() {
     const goodsContainer = document.getElementById('goodsContainer');
@@ -31,26 +31,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 params.append('sort_order', sortOrderSelect.value);
             }
 
-            // ВАЖНО: Используем либо поиск, либо фильтры, но не одновременно
+            // ВАЖНО: Используем либо поиск, либо фильтры
             if (currentQuery) {
                 // Если есть поисковый запрос, добавляем его
                 params.append('query', currentQuery);
                 console.log('Поисковый запрос:', currentQuery);
             } else {
-                // Если поиска нет, применяем фильтры из currentFilters
-                if (currentFilters.category) {
-                    params.append('main_category', currentFilters.category);
+                // Если поиска нет, применяем фильтры
+                // Здесь читаем значения напрямую из DOM при каждом запросе
+                // Это лучше, чем хранить в currentFilters
+                const categoryCheckboxes = document.querySelectorAll('.filter-category input[type="checkbox"]:checked');
+                const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+                
+                if (categories.length > 0) {
+                    // Берем первую выбранную категорию
+                    params.append('main_category', categories[0]);
                 }
-                if (currentFilters.priceFrom) {
-                    params.append('price_from', currentFilters.priceFrom);
-                }
-                if (currentFilters.priceTo) {
-                    params.append('price_to', currentFilters.priceTo);
-                }
-                if (currentFilters.discount) {
+                
+                const priceFrom = document.getElementById('priceFrom').value;
+                const priceTo = document.getElementById('priceTo').value;
+                if (priceFrom) params.append('price_from', priceFrom);
+                if (priceTo) params.append('price_to', priceTo);
+                
+                if (document.getElementById('onlyDiscount').checked) {
                     params.append('discount', 1);
                 }
-                console.log('Фильтры:', currentFilters);
             }
 
             const url = `/goods?${params.toString()}`;
@@ -60,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Обработка ответа
             const incomingGoods = data.goods || data;
-            console.log('Получено товаров:', incomingGoods.length);
+            console.log('Получено товаров:', incomingGoods?.length || 0);
 
             if (reset) {
                 goodsContainer.innerHTML = '';
@@ -88,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Отображение товаров ---
     function renderGoods(goods) {
         goodsContainer.innerHTML = '';
-        if (goods.length === 0) {
+        if (!goods || goods.length === 0) {
             goodsContainer.innerHTML = '<p>Нет товаров, соответствующих вашему запросу.</p>';
             return;
         }
@@ -121,10 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Автодополнение (Вариант 1) ---
+    // --- Автодополнение ---
     searchInput.addEventListener('input', debounce(async function() {
         const query = this.value.trim();
-        // Запрос отправляем, только если введено хотя бы 2-3 символа
         if (query.length > 2) {
             try {
                 const suggestions = await utils.apiRequest(`/autocomplete?query=${encodeURIComponent(query)}`);
@@ -171,40 +175,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Поиск ---
     searchBtn.addEventListener('click', function() {
         currentQuery = searchInput.value.trim();
-        // Сбрасываем фильтры при поиске
-        currentFilters = {
-            category: null,
-            priceFrom: null,
-            priceTo: null,
-            discount: false
-        };
-        // Сбрасываем чекбоксы в сайдбаре
+        if (!currentQuery) return;
+        
+        // Сбрасываем фильтры в UI
         document.querySelectorAll('.filter-category input[type="checkbox"]').forEach(cb => cb.checked = false);
         document.getElementById('priceFrom').value = '';
         document.getElementById('priceTo').value = '';
         document.getElementById('onlyDiscount').checked = false;
         
+        console.log('Выполняем поиск:', currentQuery);
         loadGoods(1, true);
     });
 
     // --- Фильтрация (сайдбар) ---
     applyFilterBtn.addEventListener('click', function() {
-        // Собираем категории (берем первую выбранную)
-        const categories = document.querySelectorAll('.filter-category input[type="checkbox"]:checked');
-        const categoryValues = Array.from(categories).map(cb => cb.value);
-        
-        currentFilters.category = categoryValues[0] || null;
-        currentFilters.priceFrom = document.getElementById('priceFrom').value || null;
-        currentFilters.priceTo = document.getElementById('priceTo').value || null;
-        currentFilters.discount = document.getElementById('onlyDiscount').checked;
-        
         // Сбрасываем поисковый запрос
         currentQuery = '';
         searchInput.value = '';
         autocompleteList.innerHTML = '';
         autocompleteList.classList.remove('show');
         
-        console.log('Применены фильтры:', currentFilters);
+        console.log('Применяем фильтры');
         loadGoods(1, true);
     });
 
