@@ -3,104 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
+    <title>Личный кабинет - Мои заказы</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header>
-    <div class="logo">🛒 Магазин Товаров</div>
-    <div class="nav-icons">
-        <a href="index.html" class="nav-link">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Главная</span>
-        </a>
-        <a href="cart.html" class="nav-link">
-            <span class="nav-icon">🛒</span>
-            <span class="nav-text">Корзина</span>
-        </a>
-    </div>
-</header>
+    <header>
+        <div class="logo">👤 Магазин Товаров</div>
+        
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Введите запрос">
+            <button id="searchBtn">Найти</button>
+            <div id="autocomplete-list" class="autocomplete-list"></div>
+        </div>
+        
+        <div class="nav-icons">
+            <a href="index.html" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Главная</span>
+            </a>
+            <a href="cart.html" class="nav-link">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-text">Корзина</span>
+            </a>
+            <a href="orders.html" class="nav-link active">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Личный кабинет</span>
+            </a>
+        </div>
+    </header>
 
     <div id="notification" class="notification hidden"></div>
 
-    <main>
+    <main class="orders-page">
         <section class="orders-section">
-            <h2>Заказы</h2>
-            <table id="ordersTable">
-                <thead>
-                    <tr>
-                        <th>№</th>
-                        <th>Дата оформления</th>
-                        <th>Состав заказа</th>
-                        <th>Стоимость</th>
-                        <th>Доставка</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersList"></tbody>
-            </table>
+            <h2>📦 Мои заказы</h2>
+            
+            <div class="orders-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Дата</th>
+                            <th>Товары</th>
+                            <th>Сумма</th>
+                            <th>Доставка</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-orders">
+                                У вас пока нет заказов. <a href="index.html">Перейти в каталог</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
-
-    <!-- Модальное окно просмотра -->
-    <div id="viewModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Просмотр заказа</h3>
-            <div id="viewOrderDetails"></div>
-            <button class="btn-close">Ok</button>
-        </div>
-    </div>
-
-    <!-- Модальное окно редактирования -->
-    <div id="editModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Редактирование заказа</h3>
-            <form id="editOrderForm">
-                <input type="hidden" id="editOrderId">
-                <label>Имя: <input type="text" id="editFullName" required></label>
-                <label>Email: <input type="email" id="editEmail" required></label>
-                <label>Телефон: <input type="text" id="editPhone" required></label>
-                <label>Адрес доставки: <input type="text" id="editDeliveryAddress" required></label>
-                <label>Дата доставки: <input type="date" id="editDeliveryDate" required></label>
-                <label>Временной интервал:
-                    <select id="editDeliveryInterval" required>
-                        <option value="08:00-12:00">08:00-12:00</option>
-                        <option value="12:00-14:00">12:00-14:00</option>
-                        <option value="14:00-18:00">14:00-18:00</option>
-                        <option value="18:00-22:00">18:00-22:00</option>
-                    </select>
-                </label>
-                <label>Комментарий: <textarea id="editComment"></textarea></label>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel">Отмена</button>
-                    <button type="submit">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Модальное окно подтверждения удаления -->
-    <div id="deleteModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Удаление заказа</h3>
-            <p>Вы уверены, что хотите удалить заказ?</p>
-            <div class="form-actions">
-                <button id="deleteConfirm" class="btn-danger">Да</button>
-                <button id="deleteCancel" class="btn-cancel">Нет</button>
-            </div>
-        </div>
-    </div>
 
     <footer>
         © 2025 Название компании | Контакты: info@example.com
     </footer>
 
+    <!-- Модальное окно: Просмотр заказа -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('viewModal').style.display='none'">&times;</span>
+            <h3>🔍 Детали заказа</h3>
+            <div id="viewModalContent"></div>
+            <button class="btn-close" onclick="document.getElementById('viewModal').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Редактирование заказа -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+            <h3>✏️ Редактирование заказа</h3>
+            <form id="editOrderForm">
+                <label>
+                    <span class="label-text">Имя:</span>
+                    <input type="text" id="editName" required>
+                </label>
+                <label>
+                    <span class="label-text">Email:</span>
+                    <input type="email" id="editEmail" required>
+                </label>
+                <label>
+                    <span class="label-text">Телефон:</span>
+                    <input type="tel" id="editPhone" required>
+                </label>
+                <label>
+                    <span class="label-text">Адрес доставки:</span>
+                    <input type="text" id="editAddress" required>
+                </label>
+                <label>
+                    <span class="label-text">Дата доставки:</span>
+                    <input type="date" id="editDate" required>
+                </label>
+                <label>
+                    <span class="label-text">Время:</span>
+                    <select id="editTime">
+                        <option value="08:00-12:00">08:00 - 12:00</option>
+                        <option value="12:00-14:00">12:00 - 14:00</option>
+                        <option value="14:00-18:00">14:00 - 18:00</option>
+                        <option value="18:00-22:00">18:00 - 22:00</option>
+                    </select>
+                </label>
+                <label>
+                    <span class="label-text">Комментарий:</span>
+                    <textarea id="editComment" rows="3"></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('editModal').style.display='none'">Отмена</button>
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Удаление заказа -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content modal-confirm">
+            <span class="close" onclick="document.getElementById('deleteModal').style.display='none'">&times;</span>
+            <h3>⚠️ Удаление заказа</h3>
+            <p>Вы уверены, что хотите удалить этот заказ?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('deleteModal').style.display='none'">Нет</button>
+                <button class="btn-danger" id="confirmDelete">Да, удалить</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/utils.js"></script>
     <script src="js/orders.js"></script>
 </body>
-
 </html>
-
