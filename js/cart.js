@@ -13,22 +13,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Загрузка товаров корзины ---
     async function loadCartItems() {
-        const cartItems = utils.Cart.getItems(); // ИСПРАВЛЕНО: возвращает [{id, quantity}, ...]
+        const cartItems = utils.Cart.getItems(); // [{id, quantity}, ...]
+        
+        console.log('📦 Корзина:', cartItems);
         
         if (cartItems.length === 0) {
-            cartItemsContainer.style.display = 'none';
-            emptyCartMessage.style.display = 'block';
-            orderForm.style.display = 'none';
+            if (cartItemsContainer) cartItemsContainer.style.display = 'none';
+            if (emptyCartMessage) emptyCartMessage.style.display = 'block';
+            if (orderForm) orderForm.style.display = 'none';
             updateTotalCost();
             return;
         }
 
-        cartItemsContainer.style.display = 'block';
-        emptyCartMessage.style.display = 'none';
-        orderForm.style.display = 'block';
+        if (cartItemsContainer) cartItemsContainer.style.display = 'block';
+        if (emptyCartMessage) emptyCartMessage.style.display = 'none';
+        if (orderForm) orderForm.style.display = 'block';
 
         try {
-            console.log('📦 Загрузка товаров корзины:', cartItems);
+            console.log('📡 Загрузка товаров корзины...');
             
             // Загрузка данных каждого товара по ID
             const promises = cartItems.map(item => utils.apiRequest(`/goods/${item.id}`));
@@ -46,51 +48,57 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('❌ Ошибка загрузки товаров корзины:', error);
             utils.showNotification('Ошибка загрузки корзины', 'error');
+            
+            if (cartItemsContainer) {
+                cartItemsContainer.innerHTML = '<p style="color: red; padding: 2rem; text-align: center;">Ошибка загрузки товаров</p>';
+            }
         }
     }
 
     // --- Отображение товаров корзины ---
     function renderCartItems(goods) {
+        if (!cartItemsContainer) return;
+        
         cartItemsContainer.innerHTML = '';
         
         goods.forEach(good => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'cart-item';
-            itemDiv.style.cssText = 'display: grid; grid-template-columns: 100px 1fr auto auto; gap: 1rem; align-items: center; padding: 1rem; border-bottom: 1px solid #eee;';
+            itemDiv.style.cssText = 'display: grid; grid-template-columns: 120px 1fr auto auto; gap: 1.5rem; align-items: center; padding: 1.5rem; border-bottom: 1px solid #eee; background: white;';
             
             const price = good.discount_price || good.actual_price;
             const totalPrice = price * good.quantity;
             
             itemDiv.innerHTML = `
                 <img src="${good.image_url}" alt="${good.name}" 
-                     style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;"
-                     onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                     style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #f0f0f0;"
+                     onerror="this.src='https://via.placeholder.com/120?text=No+Image'">
                 
                 <div>
-                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${good.name}</div>
-                    <div style="color: #666;">
+                    <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.5rem; line-height: 1.3;">${good.name}</div>
+                    <div style="color: #666; font-size: 0.9rem;">
                         ${good.discount_price ? 
-                            `<span style="color: #28a745; font-weight: 700;">${good.discount_price} ₽</span> 
-                             <span style="text-decoration: line-through; color: #999;">${good.actual_price} ₽</span>` :
-                            `<span style="font-weight: 700;">${good.actual_price} ₽</span>`
+                            `<span style="color: #28a745; font-weight: 700; font-size: 1.1rem;">${good.discount_price} ₽</span> 
+                             <span style="text-decoration: line-through; color: #999; margin-left: 0.5rem;">${good.actual_price} ₽</span>` :
+                            `<span style="font-weight: 700; font-size: 1.1rem;">${good.actual_price} ₽</span>`
                         }
                     </div>
                 </div>
                 
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <button class="quantity-btn" data-id="${good.id}" data-action="decrease" 
-                            style="padding: 0.25rem 0.75rem; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">−</button>
-                    <input type="number" value="${good.quantity}" min="1" 
+                            style="width: 32px; height: 32px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: 700; color: #666; transition: all 0.2s;">−</button>
+                    <input type="number" value="${good.quantity}" min="1" max="99"
                            data-id="${good.id}" class="quantity-input"
-                           style="width: 60px; text-align: center; padding: 0.25rem; border: 1px solid #ccc; border-radius: 4px;">
+                           style="width: 60px; text-align: center; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-weight: 600;">
                     <button class="quantity-btn" data-id="${good.id}" data-action="increase"
-                            style="padding: 0.25rem 0.75rem; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">+</button>
+                            style="width: 32px; height: 32px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: 700; color: #666; transition: all 0.2s;">+</button>
                 </div>
                 
-                <div style="text-align: right;">
-                    <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;">${totalPrice} ₽</div>
+                <div style="text-align: right; min-width: 140px;">
+                    <div style="font-weight: 700; font-size: 1.3rem; margin-bottom: 1rem; color: #000;">${totalPrice} ₽</div>
                     <button class="remove-from-cart" data-id="${good.id}"
-                            style="padding: 0.5rem 1rem; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить</button>
+                            style="padding: 0.5rem 1rem; background: #e31d1c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">Удалить</button>
                 </div>
             `;
             cartItemsContainer.appendChild(itemDiv);
@@ -100,17 +108,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.remove-from-cart').forEach(button => {
             button.addEventListener('click', (e) => {
                 const goodId = parseInt(e.target.dataset.id, 10);
-                utils.Cart.removeItem(goodId);
-                loadCartItems();
+                if (confirm('Удалить товар из корзины?')) {
+                    utils.Cart.removeItem(goodId);
+                    loadCartItems();
+                }
             });
         });
 
-        // Обработчики изменения количества (кнопки)
+        // Обработчики кнопок +/-
         document.querySelectorAll('.quantity-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const goodId = parseInt(e.target.dataset.id, 10);
                 const action = e.target.dataset.action;
                 const item = cartGoods.find(g => g.id === goodId);
+                
+                if (!item) return;
                 
                 if (action === 'increase') {
                     utils.Cart.updateQuantity(goodId, item.quantity + 1);
@@ -120,19 +132,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 loadCartItems();
             });
+            
+            // Hover эффекты
+            button.addEventListener('mouseenter', (e) => {
+                e.target.style.background = '#e0e0e0';
+            });
+            button.addEventListener('mouseleave', (e) => {
+                e.target.style.background = '#f0f0f0';
+            });
         });
 
-        // Обработчики изменения количества (input)
+        // Обработчики input
         document.querySelectorAll('.quantity-input').forEach(input => {
             input.addEventListener('change', (e) => {
                 const goodId = parseInt(e.target.dataset.id, 10);
                 const quantity = parseInt(e.target.value, 10);
                 
-                if (quantity > 0) {
+                if (quantity > 0 && quantity <= 99) {
                     utils.Cart.updateQuantity(goodId, quantity);
                     loadCartItems();
                 } else {
-                    utils.showNotification('Количество должно быть больше 0', 'error');
+                    utils.showNotification('Количество должно быть от 1 до 99', 'error');
                     loadCartItems();
                 }
             });
@@ -166,51 +186,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Отправка заказа ---
-    orderForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    if (orderForm) {
+        orderForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        const cartItems = utils.Cart.getItems();
-        if (cartItems.length === 0) {
-            utils.showNotification('Корзина пуста!', 'error');
-            return;
-        }
+            const cartItems = utils.Cart.getItems();
+            if (cartItems.length === 0) {
+                utils.showNotification('Корзина пуста!', 'error');
+                return;
+            }
 
-        // ВАЖНО: Формат даты dd.mm.yyyy для API
-        const deliveryDateInput = document.getElementById('deliveryDate').value; // YYYY-MM-DD
-        const [year, month, day] = deliveryDateInput.split('-');
-        const deliveryDateFormatted = `${day}.${month}.${year}`; // dd.mm.yyyy
-
-        const orderData = {
-            full_name: document.getElementById('fullName').value,
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            subscribe: document.getElementById('subscribe')?.checked ? 1 : 0,
-            delivery_address: document.getElementById('deliveryAddress').value,
-            delivery_date: deliveryDateFormatted, // ИСПРАВЛЕНО: dd.mm.yyyy
-            delivery_interval: document.getElementById('deliveryInterval').value,
-            comment: document.getElementById('comment')?.value || '',
-            good_ids: cartItems.map(item => item.id) // ИСПРАВЛЕНО: только ID
-        };
-
-        console.log('📤 Отправка заказа:', orderData);
-
-        try {
-            const response = await utils.apiRequest('/orders', 'POST', orderData);
-            console.log('✅ Заказ создан:', response);
+            // ВАЖНО: Конвертация YYYY-MM-DD в dd.mm.yyyy
+            const deliveryDateInput = document.getElementById('deliveryDate')?.value;
+            if (!deliveryDateInput) {
+                utils.showNotification('Укажите дату доставки', 'error');
+                return;
+            }
             
-            utils.showNotification('Заказ успешно оформлен!', 'success');
-            utils.Cart.clear();
-            
-            // Перенаправление через 1.5 секунды
-            setTimeout(() => {
-                window.location.href = 'orders.html';
-            }, 1500);
-            
-        } catch (error) {
-            console.error('❌ Ошибка оформления заказа:', error);
-            utils.showNotification(`Ошибка: ${error.message}`, 'error');
-        }
-    });
+            const [year, month, day] = deliveryDateInput.split('-');
+            const deliveryDateFormatted = `${day}.${month}.${year}`;
+
+            const orderData = {
+                full_name: document.getElementById('fullName')?.value || '',
+                email: document.getElementById('email')?.value || '',
+                phone: document.getElementById('phone')?.value || '',
+                subscribe: document.getElementById('subscribe')?.checked ? 1 : 0,
+                delivery_address: document.getElementById('deliveryAddress')?.value || '',
+                delivery_date: deliveryDateFormatted,
+                delivery_interval: document.getElementById('deliveryInterval')?.value || '',
+                comment: document.getElementById('comment')?.value || '',
+                good_ids: cartItems.map(item => item.id)
+            };
+
+            console.log('📤 Отправка заказа:', orderData);
+
+            try {
+                const response = await utils.apiRequest('/orders', 'POST', orderData);
+                console.log('✅ Заказ создан:', response);
+                
+                utils.showNotification('Заказ успешно оформлен!', 'success');
+                utils.Cart.clear();
+                
+                setTimeout(() => {
+                    window.location.href = 'orders.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ Ошибка оформления заказа:', error);
+                utils.showNotification(`Ошибка: ${error.message}`, 'error');
+            }
+        });
+    }
 
     // --- Обновление стоимости при изменении даты/времени ---
     const deliveryDateInput = document.getElementById('deliveryDate');
