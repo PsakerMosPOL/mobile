@@ -1,4 +1,4 @@
-// utils.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// utils.js
 
 // Конфигурация
 const API_BASE_URL = 'https://edu.std-900.ist.mospolytech.ru/exam-2024-1/api';
@@ -21,16 +21,19 @@ function showNotification(message, type = 'info') {
 
 function apiRequest(url, method = 'GET', data = null) {
     return new Promise((resolve, reject) => {
-        const fullUrl = `${API_BASE_URL}${url}`;
-        console.log('📡 API запрос:', method, fullUrl);
+        let fullUrl;
+        if (url.includes('?')) {
+            fullUrl = `${API_BASE_URL}${url}&api_key=${API_KEY}`;
+        } else {
+            fullUrl = `${API_BASE_URL}${url}?api_key=${API_KEY}`;
+        }
+
+        console.log('📡 API запрос:', fullUrl);
 
         const xhr = new XMLHttpRequest();
         xhr.open(method, fullUrl, true);
 
-        // ← КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: передаём ключ в заголовке
-        xhr.setRequestHeader('X-API-KEY', API_KEY);
-
-        if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        if (data && (method === 'POST' || method === 'PUT')) {
             xhr.setRequestHeader('Content-Type', 'application/json');
         }
 
@@ -47,8 +50,8 @@ function apiRequest(url, method = 'GET', data = null) {
             } else {
                 try {
                     const error = JSON.parse(xhr.responseText);
-                    console.error('❌ API ошибка:', xhr.status, error);
-                    reject(new Error(error.error || error.message || 'Ошибка запроса'));
+                    console.error('❌ API ошибка:', error);
+                    reject(new Error(error.error || 'Ошибка запроса'));
                 } catch (e) {
                     console.error('❌ HTTP ошибка:', xhr.status, xhr.statusText);
                     reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
@@ -70,8 +73,7 @@ function apiRequest(url, method = 'GET', data = null) {
             reject(error);
         };
 
-        if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-            console.log('📤 Отправка данных:', data);
+        if (data && (method === 'POST' || method === 'PUT')) {
             xhr.send(JSON.stringify(data));
         } else {
             xhr.send();
@@ -93,6 +95,7 @@ const Cart = {
             
             // МИГРАЦИЯ: Конвертируем старый формат [73, 87] в новый [{id: 73, quantity: 1}, ...]
             if (Array.isArray(parsed) && parsed.length > 0) {
+                // Проверяем первый элемент
                 if (typeof parsed[0] === 'number') {
                     console.warn('⚠️ Обнаружен старый формат корзины. Миграция данных...');
                     const migrated = parsed.map(id => ({ id: id, quantity: 1 }));
@@ -135,19 +138,10 @@ const Cart = {
         this.updateBadge();
     },
 
-    removeItem: function(goodId, removeAll = false) {
+    removeItem: function(goodId) {
         const items = this.getItems();
-        const existing = items.find(item => item.id === goodId);
-        
-        if (existing) {
-            if (removeAll || existing.quantity === 1) {
-                const filtered = items.filter(item => item.id !== goodId);
-                this.setItems(filtered);
-            } else {
-                existing.quantity -= 1;
-                this.setItems(items);
-            }
-        }
+        const filtered = items.filter(item => item.id !== goodId);
+        this.setItems(filtered);
         this.updateBadge();
     },
 
@@ -157,7 +151,7 @@ const Cart = {
         if (item) {
             item.quantity = parseInt(quantity, 10);
             if (item.quantity <= 0) {
-                this.removeItem(goodId, true);
+                this.removeItem(goodId);
             } else {
                 this.setItems(items);
             }
@@ -168,7 +162,6 @@ const Cart = {
     clear: function() {
         localStorage.removeItem(this.KEY);
         this.updateBadge();
-        console.log('🗑️ Корзина очищена');
     },
 
     getIds: function() {
@@ -202,9 +195,9 @@ function calculateDeliveryFee(deliveryDate, deliveryInterval) {
     let fee = 200;
 
     if (dayOfWeek === 0 || dayOfWeek === 6) {
-        fee += 300; // Выходные +300₽
+        fee += 300;
     } else if (hour >= 18) {
-        fee += 200; // Вечер +200₽
+        fee += 200;
     }
 
     return fee;
