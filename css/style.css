@@ -872,4 +872,164 @@ footer {
         padding: 10px;
     }
 }
+/* ========== WILDBERRIES ИСПРАВЛЕНИЯ ========== */
+
+/* Кнопка избранного - серое сердечко */
+.favorite-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    color: #666; /* ИСПРАВЛЕНО: серый цвет */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+    z-index: 10;
+    line-height: 1;
+}
+
+.favorite-btn:hover {
+    background: white;
+    transform: scale(1.1);
+    border-color: #cb11ab;
+}
+
+.favorite-btn.active {
+    color: #e31d1c;
+    background: #ffe0e0;
+    border-color: #e31d1c;
+}
+
+/* Кнопка "Завтра" - убираем дублирование иконки */
+.good-card .add-to-cart {
+    width: 100%;
+    padding: 12px;
+    background: #cb11ab;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    margin-top: auto;
+}
+
+.good-card .add-to-cart:hover {
+    background: #a80e8f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(203, 17, 171, 0.4);
+}
+
+.good-card .add-to-cart:active {
+    transform: translateY(0);
+}
+
+.good-card .add-to-cart.added {
+    background: #28a745;
+}
+
+.good-card .add-to-cart .cart-icon {
+    font-size: 1rem;
+}
+
+.good-card .add-to-cart .cart-text {
+    font-size: 1rem;
+}
+
+/* Анимация добавления */
+@keyframes addToCartAnim {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+}
+
+.good-card .add-to-cart.animating {
+    animation: addToCartAnim 0.3s ease;
+}
+
+/* Фильтры - стилизация чекбоксов */
+.category-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: #cb11ab;
+}
+
+#categoryFilters label {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+#categoryFilters label:hover {
+    background: #f8f8f8;
+}
+
+/* Кнопка "Применить фильтр" */
+#applyFilter {
+    width: 100%;
+    padding: 0.75rem;
+    background: #cb11ab;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+#applyFilter:hover {
+    background: #a80e8f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(203, 17, 171, 0.3);
+}
+
+#applyFilter:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Поля ввода цены */
+#priceFrom, #priceTo {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+#priceFrom:focus, #priceTo:focus {
+    outline: none;
+    border-color: #cb11ab;
+    box-shadow: 0 0 0 3px rgba(203, 17, 171, 0.1);
+}
+
+/* Чекбокс "Только со скидкой" */
+#onlyDiscount {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: #cb11ab;
+}
+
 
