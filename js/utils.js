@@ -33,7 +33,6 @@ function apiRequest(url, method = 'GET', data = null) {
         const xhr = new XMLHttpRequest();
         xhr.open(method, fullUrl, true);
 
-        // Заголовок только для POST/PUT
         if (data && (method === 'POST' || method === 'PUT')) {
             xhr.setRequestHeader('Content-Type', 'application/json');
         }
@@ -89,22 +88,52 @@ const Cart = {
 
     getItems: function() {
         const items = localStorage.getItem(this.KEY);
-        return items ? JSON.parse(items) : [];
+        if (!items) return [];
+        
+        try {
+            const parsed = JSON.parse(items);
+            
+            // МИГРАЦИЯ: Конвертируем старый формат [73, 87] в новый [{id: 73, quantity: 1}, ...]
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                // Проверяем первый элемент
+                if (typeof parsed[0] === 'number') {
+                    console.warn('⚠️ Обнаружен старый формат корзины. Миграция данных...');
+                    const migrated = parsed.map(id => ({ id: id, quantity: 1 }));
+                    this.setItems(migrated);
+                    return migrated;
+                }
+            }
+            
+            return parsed;
+        } catch (e) {
+            console.error('Ошибка чтения корзины:', e);
+            return [];
+        }
+    },
+
+    setItems: function(items) {
+        try {
+            localStorage.setItem(this.KEY, JSON.stringify(items));
+            console.log('✅ Корзина обновлена:', items);
+        } catch (e) {
+            console.error('Ошибка сохранения корзины:', e);
+        }
     },
 
     addItem: function(goodId) {
+        console.log('🛒 Добавление товара ID:', goodId);
         const items = this.getItems();
         const existing = items.find(item => item.id === goodId);
         
         if (existing) {
             existing.quantity += 1;
-            console.log('✅ Увеличено количество товара:', existing);
+            console.log('✅ Увеличено количество:', existing);
         } else {
             items.push({ id: goodId, quantity: 1 });
-            console.log('✅ Новый товар добавлен в корзину:', goodId);
+            console.log('✅ Новый товар добавлен');
         }
         
-        localStorage.setItem(this.KEY, JSON.stringify(items));
+        this.setItems(items);
         showNotification('Товар добавлен в корзину', 'success');
         this.updateBadge();
     },
@@ -112,7 +141,7 @@ const Cart = {
     removeItem: function(goodId) {
         const items = this.getItems();
         const filtered = items.filter(item => item.id !== goodId);
-        localStorage.setItem(this.KEY, JSON.stringify(filtered));
+        this.setItems(filtered);
         this.updateBadge();
     },
 
@@ -124,7 +153,7 @@ const Cart = {
             if (item.quantity <= 0) {
                 this.removeItem(goodId);
             } else {
-                localStorage.setItem(this.KEY, JSON.stringify(items));
+                this.setItems(items);
             }
         }
         this.updateBadge();
