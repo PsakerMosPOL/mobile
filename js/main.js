@@ -1,4 +1,4 @@
-// main.js 
+// main.js
 
 document.addEventListener('DOMContentLoaded', function() {
     const goodsContainer = document.getElementById('goodsContainer');
@@ -11,13 +11,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentPage = 1;
     let currentQuery = '';
-    let currentFilters = {
-        category: null,
-        priceFrom: null,
-        priceTo: null,
-        discount: false
-    };
     let allGoods = [];
+    let availableCategories = [];
+
+    // --- Загрузка категорий ---
+    async function loadCategories() {
+        try {
+            const data = await utils.apiRequest('/goods?per_page=100');
+            const goods = data.goods || data;
+            
+            // Извлекаем уникальные категории
+            const categories = [...new Set(goods.map(g => g.main_category))].sort();
+            availableCategories = categories;
+            
+            const container = document.getElementById('categoryFilters');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" value="${cat}" class="category-checkbox"> ${cat}`;
+                container.appendChild(label);
+            });
+            
+        } catch (error) {
+            console.error('Ошибка загрузки категорий:', error);
+            const container = document.getElementById('categoryFilters');
+            if (container) {
+                container.innerHTML = '<p style="color: red;">Ошибка загрузки категорий</p>';
+            }
+        }
+    }
 
     // --- Загрузка товаров ---
     async function loadGoods(page = 1, reset = false) {
@@ -26,34 +51,32 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('page', page);
             params.append('per_page', 10);
             
-            // Сортировка должна применяться всегда, если выбрана
+            // Сортировка
             if (sortOrderSelect.value) {
                 params.append('sort_order', sortOrderSelect.value);
             }
 
-            // ВАЖНО: Используем либо поиск, либо фильтры
+            // Поиск или фильтры
             if (currentQuery) {
-                // Если есть поисковый запрос, добавляем его
+                // Режим поиска
                 params.append('query', currentQuery);
-                console.log('Поисковый запрос:', currentQuery);
+                console.log('Поиск:', currentQuery);
             } else {
-                // Если поиска нет, применяем фильтры
-                // Здесь читаем значения напрямую из DOM при каждом запросе
-                // Это лучше, чем хранить в currentFilters
-                const categoryCheckboxes = document.querySelectorAll('.filter-category input[type="checkbox"]:checked');
+                // Режим фильтрации
+                const categoryCheckboxes = document.querySelectorAll('.category-checkbox:checked');
                 const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
                 
                 if (categories.length > 0) {
-                    // Берем первую выбранную категорию
                     params.append('main_category', categories[0]);
                 }
                 
-                const priceFrom = document.getElementById('priceFrom').value;
-                const priceTo = document.getElementById('priceTo').value;
+                const priceFrom = document.getElementById('priceFrom')?.value;
+                const priceTo = document.getElementById('priceTo')?.value;
+                
                 if (priceFrom) params.append('price_from', priceFrom);
                 if (priceTo) params.append('price_to', priceTo);
                 
-                if (document.getElementById('onlyDiscount').checked) {
+                if (document.getElementById('onlyDiscount')?.checked) {
                     params.append('discount', 1);
                 }
             }
@@ -69,9 +92,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (reset) {
                 goodsContainer.innerHTML = '';
-                allGoods = incomingGoods;
+                allGoods = incomingGoods || [];
             } else {
-                allGoods = allGoods.concat(incomingGoods);
+                allGoods = allGoods.concat(incomingGoods || []);
             }
 
             renderGoods(allGoods);
@@ -86,15 +109,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error('Ошибка загрузки товаров:', error);
-            utils.showNotification('Ошибка загрузки товаров', 'error');
+            goodsContainer.innerHTML = '<p style="padding: 2rem; text-align: center;">Ошибка загрузки товаров. Попробуйте позже.</p>';
+            loadMoreBtn.style.display = 'none';
         }
     }
 
     // --- Отображение товаров ---
     function renderGoods(goods) {
         goodsContainer.innerHTML = '';
+        
         if (!goods || goods.length === 0) {
-            goodsContainer.innerHTML = '<p>Нет товаров, соответствующих вашему запросу.</p>';
+            goodsContainer.innerHTML = '<p style="padding: 2rem; text-align: center; grid-column: 1/-1;">Нет товаров, соответствующих вашему запросу.</p>';
             return;
         }
 
@@ -104,12 +129,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Форматирование цены
             const priceDisplay = good.discount_price 
-                ? `<span class="discount">${good.discount_price} ₽</span><span class="price original">${good.actual_price} ₽</span>` 
+                ? `<span class="discount">${good.discount_price} ₽</span> <span class="price original">${good.actual_price} ₽</span>` 
                 : `<span class="price">${good.actual_price} ₽</span>`;
             
+            // Обрезаем длинное название
+            const shortName = good.name.length > 80 ? good.name.substring(0, 80) + '...' : good.name;
+            
             card.innerHTML = `
-                <img src="${good.image_url}" alt="${good.name}" onerror="this.src='assets/placeholder.png';">
-                <div class="name" title="${good.name}">${good.name}</div>
+                <img src="${good.image_url}" alt="${good.name}" onerror="this.src='https://via.placeholder.com/200x200?text=No+Image';">
+                <div class="name" title="${good.name}">${shortName}</div>
                 <div class="rating">⭐ ${good.rating}</div>
                 <div class="price-block">${priceDisplay}</div>
                 <button class="add-to-cart" data-id="${good.id}">Добавить в корзину</button>
@@ -117,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
             goodsContainer.appendChild(card);
         });
 
-        // Навешиваем события на новые кнопки
+        // Навешиваем события на кнопки "Добавить в корзину"
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', (e) => {
                 const goodId = parseInt(e.target.dataset.id, 10);
@@ -129,11 +157,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Автодополнение ---
     searchInput.addEventListener('input', debounce(async function() {
         const query = this.value.trim();
+        
         if (query.length > 2) {
             try {
                 const suggestions = await utils.apiRequest(`/autocomplete?query=${encodeURIComponent(query)}`);
                 displayAutocomplete(suggestions);
             } catch (error) {
+                console.error('Ошибка автодополнения:', error);
                 autocompleteList.innerHTML = '';
                 autocompleteList.classList.remove('show');
             }
@@ -145,11 +175,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayAutocomplete(suggestions) {
         autocompleteList.innerHTML = '';
+        
         if (suggestions && suggestions.length > 0) {
             suggestions.forEach(suggestion => {
                 const div = document.createElement('div');
                 div.textContent = suggestion;
                 div.addEventListener('click', () => {
+                    // Заменяем последнее слово на выбранное
                     const words = searchInput.value.split(' ');
                     words[words.length - 1] = suggestion; 
                     searchInput.value = words.join(' '); 
@@ -175,19 +207,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Поиск ---
     searchBtn.addEventListener('click', function() {
         currentQuery = searchInput.value.trim();
-        if (!currentQuery) return;
+        
+        if (!currentQuery) {
+            utils.showNotification('Введите поисковый запрос', 'info');
+            return;
+        }
         
         // Сбрасываем фильтры в UI
-        document.querySelectorAll('.filter-category input[type="checkbox"]').forEach(cb => cb.checked = false);
-        document.getElementById('priceFrom').value = '';
-        document.getElementById('priceTo').value = '';
-        document.getElementById('onlyDiscount').checked = false;
+        document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+        const priceFromInput = document.getElementById('priceFrom');
+        const priceToInput = document.getElementById('priceTo');
+        const discountCheckbox = document.getElementById('onlyDiscount');
+        
+        if (priceFromInput) priceFromInput.value = '';
+        if (priceToInput) priceToInput.value = '';
+        if (discountCheckbox) discountCheckbox.checked = false;
         
         console.log('Выполняем поиск:', currentQuery);
         loadGoods(1, true);
     });
 
-    // --- Фильтрация (сайдбар) ---
+    // Поиск по Enter
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchBtn.click();
+        }
+    });
+
+    // --- Фильтрация ---
     applyFilterBtn.addEventListener('click', function() {
         // Сбрасываем поисковый запрос
         currentQuery = '';
@@ -205,12 +253,13 @@ document.addEventListener('DOMContentLoaded', function() {
         loadGoods(1, true);
     });
 
-    // --- Загрузка ещё (пагинация) ---
+    // --- Пагинация ---
     loadMoreBtn.addEventListener('click', function() {
+        console.log('Загрузка страницы:', currentPage + 1);
         loadGoods(currentPage + 1, false);
     });
 
-    // --- Функция Debounce ---
+    // --- Debounce функция ---
     function debounce(func, wait) {
         let timeout;
         return function(...args) {
@@ -220,6 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // --- Инициализация: Первая загрузка ---
+    // --- Инициализация ---
+    console.log('Инициализация main.js');
+    loadCategories();
     loadGoods(1, true);
 });
