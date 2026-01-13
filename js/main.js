@@ -310,19 +310,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Фильтрация ---
-    if (applyFilterBtn) {
-        applyFilterBtn.addEventListener('click', function() {
-            currentQuery = '';
-            if (searchInput) searchInput.value = '';
-            if (autocompleteList) {
-                autocompleteList.innerHTML = '';
-                autocompleteList.classList.remove('show');
-            }
-            
-            console.log('🔧 Применяем фильтры');
-            loadGoods(1, true);
+if (applyFilterBtn) {
+    applyFilterBtn.addEventListener('click', function() {
+        if (isLoading) return; // Защита от двойного клика
+        
+        currentQuery = '';
+        if (searchInput) searchInput.value = '';
+        if (autocompleteList) {
+            autocompleteList.innerHTML = '';
+            autocompleteList.classList.remove('show');
+        }
+        
+        console.log('🔧 Применяем фильтры');
+        
+        // Временно блокируем кнопку
+        applyFilterBtn.disabled = true;
+        applyFilterBtn.textContent = 'Загрузка...';
+        
+        loadGoods(1, true).finally(() => {
+            applyFilterBtn.disabled = false;
+            applyFilterBtn.textContent = 'Применить';
         });
-    }
+    });
+}
+
 
     // --- Сортировка ---
     if (sortOrderSelect) {
@@ -356,3 +367,4 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadGoods(1, true);
 }); // <-- ЗАКРЫВАЮЩАЯ СКОБКА ОБЯЗАТЕЛЬНА!
+
