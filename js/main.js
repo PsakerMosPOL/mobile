@@ -207,4 +207,152 @@ document.addEventListener('DOMContentLoaded', function() {
             const shortName = name.length > 60 ? name.substring(0, 60) + '...' : name;
             
             card.innerHTML = `
-                <img src="${imageUrl}" alt="${name}" onerror="th
+                <img src="${imageUrl}" alt="${name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=No+Image';">
+                <div class="name" title="${name}">${shortName}</div>
+                <div class="rating">⭐ ${rating.toFixed(1)}</div>
+                ${priceDisplay}
+                <button class="add-to-cart" data-id="${id}">Добавить в корзину</button>
+            `;
+            goodsContainer.appendChild(card);
+        });
+
+        // Навешиваем события на кнопки
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const goodId = parseInt(e.target.dataset.id, 10);
+                utils.Cart.addItem(goodId);
+            });
+        });
+    }
+
+    // --- Автодополнение ---
+    if (searchInput && autocompleteList) {
+        searchInput.addEventListener('input', debounce(async function() {
+            const query = this.value.trim();
+            if (query.length > 2) {
+                try {
+                    const suggestions = await utils.apiRequest(`/autocomplete?query=${encodeURIComponent(query)}`);
+                    displayAutocomplete(suggestions);
+                } catch (error) {
+                    console.log('Автодополнение недоступно');
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.classList.remove('show');
+                }
+            } else {
+                autocompleteList.innerHTML = '';
+                autocompleteList.classList.remove('show');
+            }
+        }, 300));
+    }
+
+    function displayAutocomplete(suggestions) {
+        if (!autocompleteList) return;
+        
+        autocompleteList.innerHTML = '';
+        if (suggestions && suggestions.length > 0) {
+            suggestions.forEach(suggestion => {
+                const div = document.createElement('div');
+                div.textContent = suggestion;
+                div.addEventListener('click', () => {
+                    searchInput.value = suggestion;
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.classList.remove('show');
+                    searchBtn.click();
+                });
+                autocompleteList.appendChild(div);
+            });
+            autocompleteList.classList.add('show');
+        } else {
+            autocompleteList.classList.remove('show');
+        }
+    }
+
+    // Закрытие автодополнения
+    document.addEventListener('click', function(e) {
+        if (autocompleteList && !searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+            autocompleteList.classList.remove('show');
+        }
+    });
+
+    // --- Поиск ---
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                utils.showNotification('Введите поисковый запрос', 'info');
+                return;
+            }
+            
+            currentQuery = query;
+            // Сбрасываем фильтры
+            document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+            const priceFrom = document.getElementById('priceFrom');
+            const priceTo = document.getElementById('priceTo');
+            const discountCheckbox = document.getElementById('onlyDiscount');
+            
+            if (priceFrom) priceFrom.value = '';
+            if (priceTo) priceTo.value = '';
+            if (discountCheckbox) discountCheckbox.checked = false;
+            
+            console.log('🔍 Поиск:', currentQuery);
+            loadGoods(1, true);
+        });
+    }
+
+    // Поиск по Enter
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchBtn.click();
+            }
+        });
+    }
+
+    // --- Фильтрация ---
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', function() {
+            currentQuery = '';
+            if (searchInput) searchInput.value = '';
+            if (autocompleteList) {
+                autocompleteList.innerHTML = '';
+                autocompleteList.classList.remove('show');
+            }
+            
+            console.log('🔧 Применяем фильтры');
+            loadGoods(1, true);
+        });
+    }
+
+    // --- Сортировка ---
+    if (sortOrderSelect) {
+        sortOrderSelect.addEventListener('change', function() {
+            console.log('🔄 Сортировка:', this.value);
+            loadGoods(1, true);
+        });
+    }
+
+    // --- Загрузка ещё ---
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            if (!isLoading && hasMore) {
+                loadGoods(currentPage + 1, false);
+            }
+        });
+    }
+
+    // --- Функция Debounce ---
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    // --- ИНИЦИАЛИЗАЦИЯ (ВАЖНО!) ---
+    console.log('🚀 Инициализация main.js');
+    loadCategories();
+    loadGoods(1, true);
+}); // <-- ЗАКРЫВАЮЩАЯ СКОБКА ОБЯЗАТЕЛЬНА!
