@@ -467,3 +467,49 @@ footer {
 .modal:not(.hidden) {
     display: flex;
 }
+/* Добавьте в существующие стили .nav-icons */
+
+.nav-icons {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: #f0f0f0;
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.nav-text {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Адаптивность для иконок */
+@media (max-width: 768px) {
+    .nav-text {
+        display: none; /* Скрываем текст на мобильных */
+    }
+    
+    .nav-icon {
+        margin-right: 0;
+        font-size: 1.4rem;
+    }
+    
+    .nav-link {
+        padding: 0.5rem;
+    }
+}
