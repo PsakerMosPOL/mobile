@@ -619,3 +619,364 @@ footer {
         padding: 0.5rem;
     }
 }
+/* ========== СТРАНИЦА КОРЗИНЫ (2 КОЛОНКИ) ========== */
+.cart-page {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.cart-items-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.cart-items-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.order-form-sidebar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 90px;
+    height: fit-content;
+}
+
+.order-form-sidebar h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.label-text {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.checkbox-group {
+    padding: 0.5rem 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.order-summary {
+    background: #f8f9ff;
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-row.total {
+    border-bottom: none;
+    border-top: 2px solid #667eea;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.price-value {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.total-price {
+    color: #667eea;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.form-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-primary {
+    padding: 1rem;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.btn-danger {
+    padding: 0.875rem;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+/* ========== СТРАНИЦА ЗАКАЗОВ ========== */
+.orders-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.orders-container {
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.orders-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.orders-table th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.orders-table td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+}
+
+.orders-table tbody tr:hover {
+    background: #f8f9ff;
+}
+
+.empty-orders {
+    text-align: center !important;
+    padding: 3rem !important;
+    color: #999;
+    font-size: 1.1rem;
+}
+
+.empty-orders a {
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-orders a:hover {
+    text-decoration: underline;
+}
+
+.orders-table .actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.orders-table .actions button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.orders-table .actions button:hover {
+    transform: translateY(-2px);
+}
+
+.orders-table .actions .view {
+    background: #17a2b8;
+    color: white;
+}
+
+.orders-table .actions .edit {
+    background: #ffc107;
+    color: #333;
+}
+
+.orders-table .actions .delete {
+    background: #dc3545;
+    color: white;
+}
+
+/* ========== МОДАЛЬНЫЕ ОКНА ========== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 1.25rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.modal-actions button {
+    padding: 0.875rem 1.75rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-confirm {
+    max-width: 450px;
+    text-align: center;
+}
+
+.modal-confirm p {
+    font-size: 1.1rem;
+    margin: 1.5rem 0;
+    color: #666;
+}
+
+/* ========== АДАПТИВНОСТЬ ========== */
+@media (max-width: 1024px) {
+    .cart-page {
+        grid-template-columns: 1fr;
+    }
+
+    .order-form-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .orders-table {
+        font-size: 0.85rem;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+    }
+}
+
